@@ -1,74 +1,97 @@
 const router = require('express').Router();
 const validations = require('../../validations/validations');
+const mysqlConnection = require('../../config/configDb');
+//const querys = require('../../sql/sqlUsuarios');
 
-const  mysqlConnection = require('../../config/configDb');
 
 router.get('/', async (req, res) =>{
 
-    mysqlConnection.query("SELECT email, contrasenia FROM `usuarios` WHERE estado <> 'eliminado'", (err, rows, fields) =>{
+    mysqlConnection.query("SELECT idusuarios, email FROM `usuarios` WHERE estado <> 'eliminado'", (err, rows, fields) =>{
         if (!err) {
             res.json({estado:"OK",
             respuesta: rows,
-            errores: "null"
-        });
-            
+            errores: "null"});
         } else {
             console.log(err);
         }
     });
+
 });
 
 router.get('/:id', async (req, res) =>{
-// revisar pasar string a number para validar correctamente lo que viene de un param
-    console.log(req.params);
+    
+    try {
+        const { id } = req.params;
 
-    validations.validaInteger(req.params);
+        const aux = validations.validaInteger(id);
 
-    const { id } = req.params;
+        if (!!aux) {
+            return res.status(400).json({
+                estado: "Error",
+                respuesta: "null",
+                error: aux,
+            });
+        } 
 
-    mysqlConnection.query("SELECT email, contrasenia FROM `usuarios` WHERE idusuarios = ? and estado <> 'eliminado'", [id], (err, rows, fields) =>{
+        mysqlConnection.query("SELECT idusuarios, email FROM `usuarios` WHERE idusuarios = ? and estado <> 'eliminado'", [id], (err, rows, fields) =>{
 
-        if (!err && rows.length !== 0) {
-            res.json(rows[0]);
-            
-        } else {
-            console.log(err);
-            res.json({estado:"OK",
-            respuesta: "null",
-            errores: "Dato no encontrado"
+            if (!err && rows.length !== 0) {
+                res.json(rows[0]);
+                
+            } else {
+                console.log(err);
+                res.status(400).json({estado:"ERROR",
+                respuesta: "null",
+                errores: "Dato no encontrado"
+            });
+            }
         });
-        }
-    });
+
+    } catch (error) {
+        console.error('error catch: '+error);
+        res.status(400).json({
+            status: "error",
+            message: error,
+        });
+    }
+    
 });
 
 router.post('/', (req, res) =>{
 
-    validations.validaString(req.body.email);
-    validations.validaInteger(req.body.contrasenia);
+    try {
 
-    const { email, contrasenia } = req.body;
+        const aux = validations.validaEmail(req.body.email);
 
-    mysqlConnection.query("INSERT INTO `usuarios` (`email`,`contrasenia`,`f_creacion`) VALUES (?, ?, ?)", [ email, contrasenia, new Date() ], (err, rows, fields) =>{
-        if (!err) {
-            res.json({estado:"OK",
-            respuesta: "Registrado Correctamente",
-            errores: "null"
+        if (!!aux) {
+            return res.status(400).json({
+                estado: "Error",
+                respuesta: "null",
+                error: aux,
+            });
+        } 
+
+        const { email, contrasenia } = req.body;
+
+        mysqlConnection.query("INSERT INTO `usuarios` (`email`,`contrasenia`,`f_creacion`) VALUES (?, ?, ?)", [ email, contrasenia, new Date() ], (err, rows, fields) =>{
+            if (!err) {
+                res.json({estado:"OK",
+                respuesta: "Registrado Correctamente",
+                errores: "null"});
+            } else {
+                console.log(err);
+                res.json({estado: "ERROR"});
+            }
         });
-            
-        } else {
-            console.log(err);
-            res.json({estado: "ERROR"});
-        }
-    });
+        
+    } catch (error) {
+        console.error('error catch: '+error);
+        res.status(400).json({
+            status: "error",
+            message: error,
+        });
+    }
 
-});
-
-
-router.use((error, req, res, next)=>{
-    res.status(400).json({
-        status: "error",
-        message: error.message,
-    });
 });
 
 
