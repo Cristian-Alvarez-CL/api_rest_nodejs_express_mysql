@@ -11,4 +11,8 @@ module.exports = {
 		description: 'Inserta usuario con email y clave',
 		query: `INSERT INTO usuarios (email,contrasenia,f_creacion) VALUES (?, ?, ?)`
 	},
+	POST_VALID_PASS:{
+		description: 'Obtiene la clave desde el email de un usuario',
+		query: `SELECT contrasenia FROM usuarios WHERE email = ? and estado <> 'eliminado'`
+	},
 };

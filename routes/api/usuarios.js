@@ -91,7 +91,6 @@ router.post('/', async (req, res) =>{
 
         const passHash = await bcryptjs.hash(contrasenia,12);
 
-  
         mysqlConnection.query(querySql.POST_REG_USER.query, [ email, passHash, new Date() ], (err, result, fields) =>{
             if (!err) {
                 res.json({estado:"OK",
@@ -99,6 +98,59 @@ router.post('/', async (req, res) =>{
                 errores: "null"});
             } else {
                 console.log(err);
+                res.json({estado: "ERROR"});
+            }
+        });
+
+    } catch (error) {
+        console.error('error catch: '+ error);
+        res.status(400).json({
+            status: "error",
+            message: error,
+        });
+    }
+
+});
+
+router.post('/login', async (req, res) =>{
+
+    try {
+
+        const aux = validations.validaEmail(req.body.email);
+        const aux2 = validations.validaAlphanumeric(req.body.contrasenia);
+
+        if (!!aux) {
+            return res.status(400).json({
+                estado: "Error",
+                respuesta: "null",
+                error: aux,
+            });
+        } 
+
+        if (!!aux2) {
+            return res.status(400).json({
+                estado: "Error",
+                respuesta: "null",
+                error: aux2,
+            });
+        } 
+
+        const { email, contrasenia } = req.body;
+
+        mysqlConnection.query(querySql.POST_VALID_PASS.query, [email], (err, result, fields) =>{
+            if (!err) {
+                const compare = bcryptjs.compareSync(contrasenia, result[0].contrasenia);
+                if (compare){
+                    res.json({estado:"OK",
+                    respuesta: "Password Correcta",
+                    errores: "null"});
+                }else{
+                    res.json({estado:"ERROR",
+                    respuesta: "null",
+                    errores: "Password IN-Correcta"});
+                }               
+            } else {
+                console.error(err);
                 res.json({estado: "ERROR"});
             }
         });
