@@ -1,20 +1,29 @@
 const router = require('express').Router();
 const validations = require('../../validations/validations');
 const mysqlConnection = require('../../config/configDb');
-//const querys = require('../../sql/sqlUsuarios');
-
+const bcryptjs = require('bcryptjs');
+const querySql = require('../../sql/sqlUsuarios');
 
 router.get('/', async (req, res) =>{
 
-    mysqlConnection.query("SELECT idusuarios, email FROM `usuarios` WHERE estado <> 'eliminado'", (err, rows, fields) =>{
-        if (!err) {
-            res.json({estado:"OK",
-            respuesta: rows,
-            errores: "null"});
-        } else {
-            console.log(err);
-        }
-    });
+    try {
+        mysqlConnection.query(querySql.GET_ALL_USERS.query, (err, result, fields) =>{
+            if (!err) {
+                res.json({estado:"OK",
+                respuesta: result,
+                errores: "null"});
+            } else {
+                console.log(err);
+            }
+        });
+    } catch (error) {
+        console.error('error catch: '+ error);
+        res.status(400).json({
+            status: "error",
+            message: error,
+        });
+        
+    }
 
 });
 
@@ -33,17 +42,15 @@ router.get('/:id', async (req, res) =>{
             });
         } 
 
-        mysqlConnection.query("SELECT idusuarios, email FROM `usuarios` WHERE idusuarios = ? and estado <> 'eliminado'", [id], (err, rows, fields) =>{
-
-            if (!err && rows.length !== 0) {
-                res.json(rows[0]);
+        mysqlConnection.query(querySql.GET_USER.query, [id,], (err, result, fields) =>{
+            if (!err && result.length !== 0) {
+                res.json(result[0]);
                 
             } else {
                 console.log(err);
                 res.status(400).json({estado:"ERROR",
                 respuesta: "null",
-                errores: "Dato no encontrado"
-            });
+                errores: "Dato no encontrado"});
             }
         });
 
@@ -57,11 +64,12 @@ router.get('/:id', async (req, res) =>{
     
 });
 
-router.post('/', (req, res) =>{
+router.post('/', async (req, res) =>{
 
     try {
 
         const aux = validations.validaEmail(req.body.email);
+        const aux2 = validations.validaAlphanumeric(req.body.contrasenia);
 
         if (!!aux) {
             return res.status(400).json({
@@ -71,9 +79,20 @@ router.post('/', (req, res) =>{
             });
         } 
 
+        if (!!aux2) {
+            return res.status(400).json({
+                estado: "Error",
+                respuesta: "null",
+                error: aux2,
+            });
+        } 
+
         const { email, contrasenia } = req.body;
 
-        mysqlConnection.query("INSERT INTO `usuarios` (`email`,`contrasenia`,`f_creacion`) VALUES (?, ?, ?)", [ email, contrasenia, new Date() ], (err, rows, fields) =>{
+        const passHash = await bcryptjs.hash(contrasenia,12);
+
+  
+        mysqlConnection.query(querySql.POST_REG_USER.query, [ email, passHash, new Date() ], (err, result, fields) =>{
             if (!err) {
                 res.json({estado:"OK",
                 respuesta: "Registrado Correctamente",
@@ -83,9 +102,9 @@ router.post('/', (req, res) =>{
                 res.json({estado: "ERROR"});
             }
         });
-        
+
     } catch (error) {
-        console.error('error catch: '+error);
+        console.error('error catch: '+ error);
         res.status(400).json({
             status: "error",
             message: error,
@@ -93,6 +112,5 @@ router.post('/', (req, res) =>{
     }
 
 });
-
 
 module.exports = router;

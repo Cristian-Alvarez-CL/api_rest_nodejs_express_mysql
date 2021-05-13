@@ -19,14 +19,11 @@ function validaInteger(data) {
 }
 
 function validaAlphanumeric(data) {
-/*
-    //caracteres alfabéticos y numéricos:  /^[0-9a-zA-Z]+$/
 
-    //if (typeof data !== 'string') {
-    if (!/^[0-9a-zA-Z]+$/.test(data)) {
-        throw new Error('Campo debe ser alphaNumerico');
+    if (typeof data !== 'string' || data.length === 0 ) {
+        return 'Campo debe ser alphaNumerico';
     } 
-*/
+
 }
 
 function validaEmail(data) {
