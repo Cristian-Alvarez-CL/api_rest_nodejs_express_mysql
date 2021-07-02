@@ -1,0 +1,56 @@
+DROP TABLE IF EXISTS usuarios;
+DROP TABLE IF EXISTS clientes;
+DROP TABLE IF EXISTS direcciones;
+
+
+CREATE TABLE `prueba`.`usuarios` (
+  `idusuarios` INT NOT NULL AUTO_INCREMENT,
+  `email` VARCHAR(45) NULL,
+  `contrasenia` VARCHAR(70) NULL,
+  `estado` VARCHAR(45) NULL,
+  `f_creacion` DATETIME NOT NULL,
+  `f_modificacion` DATETIME NULL,
+  `f_eliminacion` DATETIME NULL,
+  PRIMARY KEY (`idusuarios`));
+  
+  
+CREATE TABLE `prueba`.`clientes` (
+  `idclientes` INT NOT NULL AUTO_INCREMENT,
+  `idusuario` INT NULL,
+  `nombre` VARCHAR(45) NULL,
+  `apellidos` VARCHAR(45) NULL,
+  `telefono` VARCHAR(45) NULL,
+  `estado` VARCHAR(45) NULL,
+  `f_crea` DATETIME NULL,
+  `f_modifica` DATETIME NULL,
+  `f_elimina` DATETIME NULL,
+  PRIMARY KEY (`idclientes`),
+  INDEX `idusuarios_idx` (`idusuario` ASC) VISIBLE,
+  CONSTRAINT `idusuarios`
+    FOREIGN KEY (`idusuario`)
+    REFERENCES `prueba`.`usuarios` (`idusuarios`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+
+CREATE TABLE `prueba`.`direcciones` (
+  `iddirecciones` INT NOT NULL AUTO_INCREMENT,
+  `idcliente` INT NULL,
+  `direccion` VARCHAR(45) NULL,
+  `numero` VARCHAR(45) NULL,
+  `comuna` VARCHAR(45) NULL,
+  `tipo_vivienda` VARCHAR(45) NULL,
+  `num_depto` VARCHAR(45) NULL,
+  `estado` VARCHAR(45) NULL,
+  `f_crea` INT NULL,
+  `f_modif` INT NULL,
+  `f_elimina` INT NULL,
+  PRIMARY KEY (`iddirecciones`),
+  INDEX `idclientes_idx` (`idcliente` ASC) VISIBLE,
+  CONSTRAINT `idclientes`
+    FOREIGN KEY (`idcliente`)
+    REFERENCES `prueba`.`clientes` (`idclientes`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+
