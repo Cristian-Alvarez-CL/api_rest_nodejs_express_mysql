@@ -5,13 +5,12 @@ const bcryptjs = require('bcryptjs');
 const querySql = require('../../sql/sqlUsuarios');
 
 router.get('/', async (req, res) =>{
-
     try {
         mysqlConnection.query(querySql.GET_ALL_USERS.query, (err, result, fields) =>{
+            console.log(`err: ${err}`);
+            console.log(`result: ${result}`);
             if (!err) {
-                res.json({estado:"OK",
-                respuesta: result,
-                errores: "null"});
+                result.length !== 0 ? res.json({estado:"OK", respuesta: result,errores: "null"}): res.json({estado:"OK", respuesta: "Sin Datos",errores: "null"});
             } else {
                 console.log(err);
             }
@@ -21,17 +20,13 @@ router.get('/', async (req, res) =>{
         res.status(400).json({
             status: "error",
             message: error,
-        });
-        
+        });   
     }
-
 });
 
 router.get('/:id', async (req, res) =>{
-    
     try {
         const { id } = req.params;
-
         const aux = validations.validaInteger(id);
 
         if (!!aux) {
@@ -41,7 +36,6 @@ router.get('/:id', async (req, res) =>{
                 error: aux,
             });
         } 
-
         mysqlConnection.query(querySql.GET_USER.query, [id,], (err, result, fields) =>{
             if (!err && result.length !== 0) {
                 res.json(result[0]);
@@ -61,7 +55,6 @@ router.get('/:id', async (req, res) =>{
             message: error,
         });
     }
-    
 });
 
 router.post('/', async (req, res) =>{
@@ -91,14 +84,22 @@ router.post('/', async (req, res) =>{
 
         const passHash = await bcryptjs.hash(contrasenia,12);
 
-        mysqlConnection.query(querySql.POST_REG_USER.query, [ email, passHash, new Date() ], (err, result, fields) =>{
-            if (!err) {
-                res.json({estado:"OK",
-                respuesta: "Registrado Correctamente",
-                errores: "null"});
+        mysqlConnection.query(querySql.POST_SEARCH_EMAIL.query, [email], (err, result, fields) =>{
+            if (!err && result.length !== 0) {
+                res.status(400).json({estado:"ERROR",
+                respuesta: "null",
+                errores: "Email ya resgistrado"});
             } else {
-                console.log(err);
-                res.json({estado: "ERROR"});
+                mysqlConnection.query(querySql.POST_REG_USER.query, [ email, passHash,'registrado', new Date() ], (err, result, fields) =>{
+                    if (!err) {
+                        res.json({estado:"OK",
+                        respuesta: "Registrado Correctamente",
+                        errores: "null"});
+                    } else {
+                        console.log(err);
+                        res.json({estado: "ERROR"});
+                    }
+                });
             }
         });
 

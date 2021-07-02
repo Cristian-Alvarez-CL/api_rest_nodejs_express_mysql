@@ -9,10 +9,14 @@ module.exports = {
 	},
 	POST_REG_USER:{
 		description: 'Inserta usuario con email y clave',
-		query: `INSERT INTO usuarios (email,contrasenia,f_creacion) VALUES (?, ?, ?)`
+		query: `INSERT INTO usuarios (email,contrasenia,estado, f_creacion) VALUES (?, ?, ?, ?)`
 	},
 	POST_VALID_PASS:{
 		description: 'Obtiene la clave desde el email de un usuario',
 		query: `SELECT contrasenia FROM usuarios WHERE email = ? and estado <> 'eliminado'`
+	},
+	POST_SEARCH_EMAIL:{
+		description: 'Obtiene el email de un usuario',
+		query: `SELECT email FROM usuarios WHERE email = ? and estado <> 'eliminado'`
 	},
 };

@@ -10,6 +10,6 @@ module.exports=(sequelize, type) =>{
         estado: type.STRING,
         f_creacion: type.DATE,
         f_modif: type.DATE,
-        f_eliminacion: type.DATE
+        f_elimina: type.DATE
     })
 }

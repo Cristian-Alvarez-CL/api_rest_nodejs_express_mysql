@@ -7,8 +7,8 @@ module.exports=(sequelize, type) =>{
         email: type.STRING,
         telefono: type.STRING,
         estado: type.STRING,
-        f_creacion: type.DATE,
+        f_crea: type.DATE,
         f_modif: type.DATE,
-        f_eliminacion: type.DATE
+        f_elimina: type.DATE
     })
 }

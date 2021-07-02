@@ -3,7 +3,8 @@ module.exports=(sequelize, type) =>{
         idUsuario: type.INTEGER,
         email: type.STRING,
         contrasenia: type.STRING,
-        f_creacion: type.DATE,
-        f_modif: type.DATE
+        f_crea: type.DATE,
+        f_modif: type.DATE,
+        f_elina: type.DATE,
     })
 }
